@@ -1,5 +1,16 @@
 const {app, BrowserWindow, ipcMain} = require('electron');
 const fs = require('fs');
+const path = require('path');
+const fr = require('face-recognition');
+
+const recognizer = fr.FaceRecognizer();
+
+const testImage = fr.loadImage(path.join(__dirname, 'faces/kliment.jpg'));
+
+recognizer.addFaces([testImage], 'kliment');
+recognizer.addFaces([testImage], 'kliment2');
+const modelState = recognizer.serialize();
+console.log(' faces serialized -->', modelState);
 
 function decodeBase64Image(dataString) {
     var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
@@ -18,10 +29,15 @@ function decodeBase64Image(dataString) {
 ipcMain.on('image', (event, arg) => {
     // console.log(arg)  // prints "ping"
     // event.sender.send('asynchronous-reply', 'pong')
-    console.log('image');
+
     fs.writeFile('./image.png', decodeBase64Image(arg).data, function (err) {
         if (err) throw err;
-        console.log('It\'s saved!');
+        try {
+            const bestPrediction = recognizer.predictBest(fr.loadImage('./image.png'));
+            console.log('best prediction -->', bestPrediction);
+        } catch (ex) {
+            console.error(ex);
+        }
     });
 });
 
@@ -44,7 +60,6 @@ app.on('window-all-closed', function() {
 // initialization and ready for creating browser windows.
 app.on('ready', function() {
   // Create the browser window.
-    console.log('govna')
   mainWindow = new BrowserWindow({width: 800, height: 600});
 
   // and load the index.html of the app.

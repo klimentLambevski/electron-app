@@ -24,3 +24,7 @@ setInterval(() => {
     ctx.drawImage(player, 0, 0, canvas.width, canvas.height);
     ipcRenderer.send('image', canvas.toDataURL());
 }, 200);
+
+module.exports = {
+    a: 'test'
+}
